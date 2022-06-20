@@ -17,11 +17,11 @@ resource "aws_vpc" "main" {
 }
 
 locals {
-    public_cidr = ["10.0.0.0/24", "10.0.1.0/24"]
-    private_cidr = ["10.0.2.0/24", "10.0.3.0/24"]
+  public_cidr  = ["10.0.0.0/24", "10.0.1.0/24"]
+  private_cidr = ["10.0.2.0/24", "10.0.3.0/24"]
 }
 
-resource "aws_subnet" "public"{
+resource "aws_subnet" "public" {
   count = 2
 
   vpc_id     = aws_vpc.main.id
@@ -32,7 +32,7 @@ resource "aws_subnet" "public"{
   }
 }
 
-resource "aws_subnet" "private"{
+resource "aws_subnet" "private" {
   count = 2
 
   vpc_id     = aws_vpc.main.id
@@ -73,7 +73,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0" 
+    cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
 
@@ -82,6 +82,12 @@ resource "aws_route_table" "public" {
   }
 }
 
+resource "aws_route_table_association" "public" {
+  count = 2
+
+  subnet_id      = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
+}
 
 resource "aws_route_table" "private" {
   count = 2
@@ -89,7 +95,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.main[count.index].id
   }
 
@@ -99,31 +105,31 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_security_group" "main" {
-  name        = "main"
-  
+  name = "main"
+
   description = "Allow internal traffic"
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description      = "All trafic from VPC"
-    from_port        = 0
-    to_port          = 65535
-    protocol         = "All"
-    cidr_blocks      = [aws_vpc.main.cidr_block]
+    description = "All trafic from VPC"
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "All"
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   ingress {
-    description      = "SSH"
-    from_port        = 22
-    to_port          = 22
-    protocol         = "TCP"
-    cidr_blocks      = ["0.0.0.0/0"]
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
   }
- egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
 
