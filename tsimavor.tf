@@ -68,7 +68,6 @@ resource "aws_nat_gateway" "main" {
   }
 }
 
-
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
