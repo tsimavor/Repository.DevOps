@@ -52,13 +52,13 @@ resource "aws_internet_gateway" "main" {
 }
 
 resource "aws_eip" "nat" {
-  count = 2
+  count = length(local.public_cidr)
 
   vpc = true
 }
 
 resource "aws_nat_gateway" "main" {
-  count = 2
+  count = length(local.public_cidr)
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
