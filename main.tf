@@ -13,6 +13,10 @@ provider "aws" {
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = var.env_code
+  }
 }
 
 locals {
@@ -27,7 +31,7 @@ resource "aws_subnet" "public" {
   cidr_block = local.public_cidr[count.index]
 
   tags = {
-    Name = "public${count.index}-vpc"
+    Name = "${var.env_code}-public${count.index}"
   }
 }
 
@@ -38,7 +42,7 @@ resource "aws_subnet" "private" {
   cidr_block = local.private_cidr[count.index]
 
   tags = {
-    Name = "private${count.index}-vpc"
+    Name = "${var.env_code}-private${count.index}"
   }
 }
 
@@ -46,7 +50,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "main-vpc"
+    Name = var.env_code
   }
 }
 
@@ -63,7 +67,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-    Name = "main-vpc"
+    Name = "${var.env_code}-${count.index}"
   }
 }
 
@@ -76,7 +80,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "public-vpc"
+    Name = "${var.env_code}-public"
   }
 }
 
@@ -98,7 +102,7 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "private${count.index}-vpc"
+    Name = "${var.env_code}-private${count.index}"
   }
 }
 
@@ -110,7 +114,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "main" {
-  name = "main"
+  name = "${var.env_code}-main"
 
   description = "Allow internal traffic"
   vpc_id      = aws_vpc.main.id
@@ -128,8 +132,9 @@ resource "aws_security_group" "main" {
     from_port   = 22
     to_port     = 22
     protocol    = "TCP"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["{var.my_public_ip}/32"]
   }
+
   egress {
     from_port   = 0
     to_port     = 0
