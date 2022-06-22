@@ -103,6 +103,13 @@ resource "aws_route_table" "private" {
   }
 }
 
+resource "aws_route_table_association" "private" {
+  count = length(local.private_cidr)
+
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
+}
+
 resource "aws_security_group" "main" {
   name = "main"
 
